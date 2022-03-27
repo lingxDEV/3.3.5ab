@@ -1,120 +1,223 @@
-/*
- * Copyright (C) 2011-2022 Project SkyFire <https://www.projectskyfire.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 3 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+/*====================
+======================*/
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
 #include "stormstout_brewery.h"
-#include "Player.h"
-#include "SpellScript.h"
 
 enum Spells
 {
-    SPELL_GROUND_POUND = 106807,
-    SPELL_GOING_BANANAS = 106651
+    SPELL_GROUND_POUND  = 106807,
+    SPELL_GOING_BANANAS  = 106651,
+    SPELL_BAREL_EXPLOSION = 106769,
+    SPELL_FORCECAST_BARREL_DROP = 122385
 };
 
-enum Events
+struct boss_ook_ook : public BossAI
 {
-    EVENT_GROUND_POUND = 1,
-    EVENT_BANANA_AURA  = 2,
-};
+    explicit boss_ook_ook(Creature* creature) : BossAI(creature, DATA_OOK_OOK) {}
 
-class boss_ook_ook : public CreatureScript
-{
-public:
-    boss_ook_ook() : CreatureScript("boss_ook_ook") { }
+    uint32 groundtimer;
+    bool fbuff, sbuff, lbuff;
 
-    struct boss_ook_ookAI : public BossAI
+    void Reset() override
     {
-        boss_ook_ookAI(Creature* creature) : BossAI(creature, DATA_OOK_OOK) { }
+        _Reset();
+        fbuff = false;
+        sbuff = false;
+        lbuff = false;
+        groundtimer = 0;
+    }
 
-        void Reset() OVERRIDE
+    void EnterCombat(Unit* /*who*/) override
+    {
+        _EnterCombat();
+        groundtimer = 5000;
+    }
+
+    void JustDied(Unit* /*killer*/) override
+    {
+        std::list<Creature*> bouncer;
+        me->GetCreatureListWithEntryInGrid(bouncer, 56849, 200.0f);
+        if (!bouncer.empty())
+            for (auto& cre_bouncer : bouncer)
+                cre_bouncer->DespawnOrUnsummon();
+
+        _JustDied();
+    }
+
+    void DamageTaken(Unit* /*attacker*/, uint32 &damage, DamageEffectType dmgType) override
+    {
+        if (HealthBelowPct(90) && !fbuff)
         {
-            BossAI::Reset();
-            me->SetReactState(REACT_DEFENSIVE);
-            events.ScheduleEvent(EVENT_GROUND_POUND, DUNGEON_MODE(15000, 10000));
-            events.ScheduleEvent(EVENT_BANANA_AURA, DUNGEON_MODE(12000, 7000));
+            fbuff = true;
+            DoCast(SPELL_GOING_BANANAS);
+            return;
         }
-
-        void JustDied(Unit* /* killer */) OVERRIDE
+        else if (HealthBelowPct(60) && !sbuff)
         {
-            _JustDied();
-            //Talk(SAY_DEATH);
-            instance->SetBossState(DATA_OOK_OOK, DONE);
+            sbuff = true;
+            DoCast(SPELL_GOING_BANANAS);
+            return;
         }
-
-        void EnterCombat(Unit* victim) OVERRIDE
+        else if (HealthBelowPct(30) && !lbuff)
         {
-            BossAI::EnterCombat(victim);
-            //Talk(SAY_AGGRO);
+            lbuff = true;
+            DoCast(SPELL_GOING_BANANAS);
+            return;
         }
+    }
 
-        void JustReachedHome() OVERRIDE
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        if (groundtimer <= diff)
         {
-            BossAI::JustReachedHome();
-            instance->SetBossState(DATA_OOK_OOK, FAIL);
+            DoCast(SPELL_GROUND_POUND);
+            groundtimer = 10000;
         }
+        else
+            groundtimer -= diff;
 
-        void KilledUnit(Unit* victim) OVERRIDE
+        DoMeleeAttackIfReady();
+    }
+};
+
+struct npc_barrel : public ScriptedAI
+{
+    npc_barrel(Creature* creature) : ScriptedAI(creature) {}
+
+    void Reset() override
+    {
+        me->GetMotionMaster()->MovePoint(100, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+    }
+
+    void MovementInform(uint32 type, uint32 id) override
+    {
+        if (id != 100)
+            return;
+
+        float x = 0, y = 0;
+        GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation(), x, y);
+
+        me->GetMotionMaster()->MovePoint(100, x, y, me->GetPositionZ());
+    }
+
+    bool CheckIfAgainstWall()
+    {
+        float x = 0, y = 0;
+        GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation(), x, y);
+
+        if (!me->IsWithinLOS(x, y, me->GetPositionZ()))
+            return true;
+
+        return false;
+    }
+
+    bool CheckIfAgainstUnit()
+    {
+        if (me->SelectNearbyTarget(NULL, 1.0f))
+            return true;
+
+        return false;
+    }
+
+    void DoExplode()
+    {
+        if (auto barrel = me->GetVehicleKit())
+            barrel->RemoveAllPassengers();
+
+        me->Kill(me);
+        DoCast(me, SPELL_BAREL_EXPLOSION, true);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (CheckIfAgainstWall() || CheckIfAgainstUnit())
+            DoExplode();
+    }
+};
+
+class spell_ook_ook_barrel_ride : public AuraScript
+{
+    PrepareAuraScript(spell_ook_ook_barrel_ride);
+
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* target = GetTarget();
+        if (!target)
+            return;
+
+        if (auto barrelBase = target)
+            barrelBase->GetMotionMaster()->MoveIdle();
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_ook_ook_barrel_ride::OnApply, EFFECT_0, SPELL_AURA_CONTROL_VEHICLE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+    }
+};
+
+class spell_ook_ook_barrel : public AuraScript
+{
+    PrepareAuraScript(spell_ook_ook_barrel);
+
+    bool CheckIfAgainstWall(Unit* caster)
+    {
+        float x = caster->GetPositionX() + (2 * cos(caster->GetOrientation()));
+        float y = caster->GetPositionY() + (2 * sin(caster->GetOrientation()));
+
+        if (!caster->IsWithinLOS(x, y, caster->GetPositionZ()))
+            return true;
+
+        return false;
+    }
+
+    bool CheckIfAgainstUnit(Unit* caster)
+    {
+        if (caster->SelectNearbyTarget(NULL, 1.0f))
+            return true;
+
+        return false;
+    }
+
+    void OnUpdate(uint32 diff, AuraEffect* aurEff)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (CheckIfAgainstWall(caster) || CheckIfAgainstUnit(caster))
         {
-            //Talk(SAY_KILL);
-        }
-
-        void UpdateAI(uint32 diff) OVERRIDE
-        {
-            if (!UpdateVictim() || !CheckInRoom())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            while (uint32 eventId = events.ExecuteEvent())
+            if (auto barrel = caster->GetVehicle())
             {
-                switch (eventId)
+                barrel->RemoveAllPassengers();
+
+                if (auto barrelBase = barrel->GetBase())
                 {
-                    case EVENT_GROUND_POUND:
-                    {
-                        DoCast(me, SPELL_GROUND_POUND);
-                        events.ScheduleEvent(EVENT_GROUND_POUND, DUNGEON_MODE(15000, 10000));
-                        break;
-                    }
-                    case EVENT_BANANA_AURA:
-                    {
-                        DoCast(me, SPELL_GOING_BANANAS);
-                        events.ScheduleEvent(EVENT_GROUND_POUND, DUNGEON_MODE(12000, 7000));
-                        break;
-                    }
-                default:
-                    break;
+                    barrelBase->CastSpell(barrelBase, SPELL_BAREL_EXPLOSION, true);
+                    barrelBase->Kill(barrelBase);
                 }
             }
-            DoMeleeAttackIfReady();
-        }
-    };
 
-    CreatureAI* GetAI(Creature* creature) const OVERRIDE
+            caster->CastSpell(caster, SPELL_FORCECAST_BARREL_DROP, true);
+            caster->RemoveAurasDueToSpell(GetSpellInfo()->Id);
+        }
+    }
+
+    void Register() override
     {
-        return GetStormstoutBreweryAI<boss_ook_ookAI>(creature);
+        OnEffectUpdate += AuraEffectUpdateFn(spell_ook_ook_barrel::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
     }
 };
 
 void AddSC_boss_ook_ook()
 {
-    new boss_ook_ook();
+    RegisterCreatureAI(boss_ook_ook);
+    RegisterCreatureAI(npc_barrel);
+    //RegisterAuraScript(spell_ook_ook_barrel_ride);
+    //RegisterAuraScript(spell_ook_ook_barrel);
 }

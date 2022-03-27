@@ -1,194 +1,261 @@
-/*
- * Copyright (C) 2011-2022 Project SkyFire <https://www.projectskyfire.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 3 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+/*====================
+======================*/
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
 #include "stormstout_brewery.h"
-#include "Player.h"
 
-enum Spells
+enum eEvents
 {
-    SPELL_SSB_BANANA_BAR        = 107297,
-    SPELL_SSB_BANANA_BAR_REMOVE = 107347
+    EVENT_WP_1      = 1,
+    EVENT_WP_2      = 2,
+    EVENT_WP_3      = 3,
+    EVENT_WP_4      = 4
 };
 
-#define SAY_OOK_OOK_1         "Who crashing Ook party!?"
-
-void SummonOokOokIfReady(InstanceScript* instance, Creature* creature, Unit* killer)
+const Position ePos[6] =
 {
-    instance->SetData(DATA_BANANA_EVENT, SPECIAL);  // Increment DeathCount
-    killer->SetPower(POWER_ALTERNATE_POWER, instance->GetData64(DATA_BANANA_EVENT));
+    {-717.66f, 1308.82f, 163.0f},
+    {-748.75f, 1321.84f, 163.0f},
+    {-770.68f, 1281.18f, 163.0f},
+    {-761.24f, 1247.89f, 163.0f},
+    {-758.56f, 1237.43f, 163.0f},
+    {-775.34f, 1215.79f, 169.0f}
+};
 
-    if (instance->GetData64(DATA_BANANA_EVENT) > 39)
+struct npc_hopling : public ScriptedAI
+{
+    npc_hopling(Creature* creature) : ScriptedAI(creature)
     {
-        if (Creature* pOokOok = creature->SummonCreature(NPC_OOK_OOK, -750.555f, 1334.4f, 162.71f, 1.83f, TempSummonType::TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR * 2 * IN_MILLISECONDS))
+        instance = creature->GetInstanceScript();
+        move = false;
+    }
+
+    InstanceScript* instance;
+    EventMap events;
+    bool move;
+
+    void IsSummonedBy(Unit* owner) override
+    {
+        if (owner->GetEntry() == NPC_TRIGGER_SUMMONER)
         {
-            // Note: should be Yell instead of Say
-            pOokOok->MonsterSay(SAY_OOK_OOK_1, Language::LANG_UNIVERSAL, 0);
-            
-            pOokOok->GetMotionMaster()->MoveJump(OokOokLandPos, pOokOok->GetExactDist2d(OokOokLandPos.GetPositionX(), OokOokLandPos.GetPositionY()) * 10.0f / 5.0f, 5.0f);
-            pOokOok->SetHomePosition(OokOokLandPos);
-            //if (creature->GetVictim())
-            //    pOakOak->AI()->AttackStart(creature->GetVictim());
+            move = true;
+            me->setFaction(14);
+            me->GetMotionMaster()->MovePoint(1, ePos[0]);
         }
-        killer->CastSpell(killer, SPELL_SSB_BANANA_BAR_REMOVE, true);
-        instance->SetBossState(DATA_BANANA_EVENT, DONE);
     }
-};
 
-void SummonHoptallusIfReady(InstanceScript* instance, Creature* creature, Unit* killer)
-{
-    if (instance->GetBossState(DATA_RABBIT_EVENT) == DONE)
-        return;
-
-    if (Creature* pHoptalus = creature->SummonCreature(NPC_HOPTALLUS, -726.259f, 1250.96f, 165.235f, 0.27f, TempSummonType::TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR * 2 * IN_MILLISECONDS))
+    void EnterEvadeMode() override
     {
-        pHoptalus->GetMotionMaster()->MoveJump(HoptallusLandPos, pHoptalus->GetExactDist2d(HoptallusLandPos.GetPositionX(), HoptallusLandPos.GetPositionY()) * 10.0f / 5.0f, 5.0f);
-        pHoptalus->SetHomePosition(HoptallusLandPos);
-        //if (creature->GetVictim())
-        //    pOakOak->AI()->AttackStart(creature->GetVictim());
+        me->DespawnOrUnsummon();
     }
-    instance->SetBossState(DATA_RABBIT_EVENT, DONE);
-};
 
-class AreaTrigger_at_ssb_banana_bar : public AreaTriggerScript
-{
-public:
-    AreaTrigger_at_ssb_banana_bar() : AreaTriggerScript("at_ssb_banana_bar") { }
-
-    bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/) OVERRIDE
+    void MovementInform(uint32 type, uint32 id) override
     {
-        // Only trigger once
-        if (InstanceScript* instance = player->GetInstanceScript())
+        if (type == POINT_MOTION_TYPE)
         {
-            if (instance->GetBossState(DATA_BANANA_EVENT) == DONE)
-                return false;
-
-            if (player->IsAlive())
+            switch (id)
             {
-                player->CastSpell(player, SPELL_SSB_BANANA_BAR, true);
-                StartBananaEvent(instance, player);
-                return true;
+            case 1:
+                events.RescheduleEvent(EVENT_WP_1, 0);
+                break;
+            case 2:
+                events.RescheduleEvent(EVENT_WP_2, 0);
+                break;
+            case 3:
+                events.RescheduleEvent(EVENT_WP_3, 0);
+                break;
+            case 4:
+                events.RescheduleEvent(EVENT_WP_4, 0);
+                break;
+            case 5:
+                me->GetMotionMaster()->MoveJump(ePos[5].GetPositionX() + irand(-10, 10), ePos[5].GetPositionY() + irand(-10, 10), ePos[5].GetPositionZ(), 15, 15);
+                me->DespawnOrUnsummon(1000);
+                break;
             }
         }
-        return false;
     }
 
-    void StartBananaEvent(InstanceScript* instance, Player* player)
+    void SpellHit(Unit* /*caster*/, SpellInfo const* spell) override
     {
-        instance->SetData(DATA_BANANA_EVENT, IN_PROGRESS);  // Reset DeathCount
-        player->SetPower(POWER_ALTERNATE_POWER, instance->GetData64(DATA_BANANA_EVENT));
-    }
-};
-
-class npc_banana_hozen : public CreatureScript
-{
-public:
-    npc_banana_hozen() : CreatureScript("npc_banana_hozen") { }
-
-    struct npc_banana_hozenAI : public ScriptedAI
-    {
-        npc_banana_hozenAI(Creature* creature) : ScriptedAI(creature)
+        if (instance)
         {
-            instance = creature->GetInstanceScript();
-        }
-
-        void Reset() OVERRIDE { }
-
-        void EnterCombat(Unit* /*who*/) OVERRIDE { }
-
-        void JustDied(Unit* killer) OVERRIDE
-        {
-            if (instance)
-                SummonOokOokIfReady(instance, me, killer);
-        }
-
-        void UpdateAI(uint32 diff) OVERRIDE
-        {
-            if (instance->GetBossState(DATA_BANANA_EVENT) == DONE)
+            if (spell->Id == SPELL_SMASH_DMG)
             {
-                if (me->GetEntry() == NPC_ANIMAL1 || me->GetEntry() == NPC_ANIMAL2)
-                {
-                    if (!me->isMoving())
-                    {
-                        me->SetSpeed(MOVE_RUN, 1.5f);
-                        me->GetMotionMaster()->MovePoint(1, BananaFleePos);
-                        me->DespawnOrUnsummon(15000);
-                    }
-                }
+                me->SetReactState(REACT_PASSIVE);
+                me->AttackStop();
+                me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 20, 10, 18);
+
+                uint32 HoplingCount = instance->GetData(DATA_HOPLING) + 1;
+                instance->SetData(DATA_HOPLING, HoplingCount);
+
+                if (HoplingCount == 100)
+                    DoCast(SPELL_SMASH_ACHIEV);
+
+                me->DespawnOrUnsummon(1000);
             }
-
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
         }
+    }
 
-        InstanceScript* instance;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const OVERRIDE
+    void UpdateAI(uint32 diff) override
     {
-        return new npc_banana_hozenAI(creature);
+        if (!UpdateVictim() && !move)
+            return;
+
+        events.Update(diff);
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            case EVENT_WP_1:
+                me->GetMotionMaster()->MovePoint(2, ePos[1]);
+                break;
+            case EVENT_WP_2:
+                me->GetMotionMaster()->MovePoint(3, ePos[2]);
+                break;
+            case EVENT_WP_3:
+                me->GetMotionMaster()->MovePoint(4, ePos[3]);
+                break;
+            case EVENT_WP_4:
+                me->GetMotionMaster()->MovePoint(5, ePos[4]);
+                break;
+            }
+        }
+        DoMeleeAttackIfReady();
     }
 };
 
-class npc_bopper : public CreatureScript
+struct npc_golden_hopling : public ScriptedAI
 {
-public:
-    npc_bopper() : CreatureScript("npc_bopper") { }
-
-    struct npc_bopperAI : public ScriptedAI
+    npc_golden_hopling(Creature* creature) : ScriptedAI(creature)
     {
-        npc_bopperAI(Creature* creature) : ScriptedAI(creature)
-        {
-            instance = creature->GetInstanceScript();
-        }
+        instance = creature->GetInstanceScript();
+        OneClick = false;
+    }
 
-        void Reset() OVERRIDE { }
+    InstanceScript* instance;
+    bool OneClick;
 
-        void EnterCombat(Unit* /*who*/) OVERRIDE { }
-
-        void JustDied(Unit* killer) OVERRIDE
-        {
-            if (instance)
-                SummonHoptallusIfReady(instance, me, killer);
-        }
-
-        void UpdateAI(uint32 diff) OVERRIDE
-        {
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-
-        InstanceScript* instance;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const OVERRIDE
+    void OnSpellClick(Unit* /*clicker*/) override
     {
-        return new npc_bopperAI(creature);
+        if (instance && !OneClick)
+        {
+            OneClick = true;
+            uint32 GoldenHoplingCount = instance->GetData(DATA_GOLDEN_HOPLING) + 1;
+            instance->SetData(DATA_GOLDEN_HOPLING, GoldenHoplingCount);
+
+            if (GoldenHoplingCount >= 30)
+                DoCast(SPELL_GOLDEN_VERMING_ACHIEV);
+
+            me->DespawnOrUnsummon();
+        }
+    }
+};
+
+struct npc_big_ol_hammer : public ScriptedAI
+{
+    npc_big_ol_hammer(Creature* creature) : ScriptedAI(creature)
+    {
+        instance = creature->GetInstanceScript();
+        OneClick = false;
+    }
+
+    InstanceScript* instance;
+    bool OneClick;
+
+    void OnSpellClick(Unit* clicker) override
+    {
+        if (instance && !OneClick)
+        {
+            OneClick = true;
+
+            for (uint8 i = 0; i < 2; ++i)
+                clicker->CastSpell(clicker, SPELL_SMASH_OVERRIDE);
+
+            me->DespawnOrUnsummon();
+        }
+    }
+};
+
+class spell_stormstout_brewery_habanero_beer : public SpellScript
+{
+    PrepareSpellScript(spell_stormstout_brewery_habanero_beer);
+
+    void HandleInstaKill(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        std::list<Creature*> creatureList;
+        GetCreatureListWithEntryInGrid(creatureList, caster, NPC_BARREL, 10.0f);
+        caster->RemoveAurasDueToSpell(SPELL_PROC_EXPLOSION);
+
+        for (auto& cre : creatureList)
+        {
+            if (cre->HasAura(SPELL_PROC_EXPLOSION))
+            {
+                cre->RemoveAurasDueToSpell(SPELL_PROC_EXPLOSION);
+                cre->CastSpell(cre, GetSpellInfo()->Id, true);
+            }
+        }
+    }
+
+    void HandleAfterCast()
+    {
+        if (auto caster = GetCaster()->ToCreature())
+            caster->ForcedDespawn(1000);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_stormstout_brewery_habanero_beer::HandleInstaKill, EFFECT_1, SPELL_EFFECT_INSTAKILL);
+        AfterCast += SpellCastFn(spell_stormstout_brewery_habanero_beer::HandleAfterCast);
+    }
+};
+
+class spell_hopling_summoner : public AuraScript
+{
+    PrepareAuraScript(spell_hopling_summoner)
+
+    void OnPeriodic(AuraEffect const* aurEff)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->CastSpell(caster, SPELL_HOPLING_SUMM_3, false);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hopling_summoner::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+class spell_sb_smash : public SpellScript
+{
+    PrepareSpellScript(spell_sb_smash);
+
+    void HandleScript(SpellEffIndex effIndex)
+    {
+        Unit* target = GetHitUnit();
+        if (!target)
+            return;
+
+        target->RemoveAuraFromStack(SPELL_SMASH_OVERRIDE);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sb_smash::HandleScript, EFFECT_2, SPELL_EFFECT_SCRIPT_EFFECT);
     }
 };
 
 void AddSC_stormstout_brewery()
 {
-    new AreaTrigger_at_ssb_banana_bar();
-    new npc_banana_hozen();
-    new npc_bopper();
+    RegisterCreatureAI(npc_hopling);
+    RegisterCreatureAI(npc_golden_hopling);
+    RegisterCreatureAI(npc_big_ol_hammer);
+    RegisterSpellScript(spell_stormstout_brewery_habanero_beer);
+    RegisterSpellScript(spell_sb_smash);
+    RegisterAuraScript(spell_hopling_summoner);
 }

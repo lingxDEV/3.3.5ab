@@ -1,61 +1,60 @@
-/*
- * Copyright (C) 2011-2022 Project SkyFire <https://www.projectskyfire.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 3 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+/*=======================
+========================*/
 
-#ifndef SF_STORMSTOUT_BREWERY_H_
-#define SF_STORMSTOUT_BREWERY_H_
-
-#define StormstoutBreweryScriptName "instance_stormstout_brewery"
-
-uint32 const EncounterCount = 5;
+#ifndef STORMSTOUT_BREWERY_H_
+#define STORMSTOUT_BREWERY_H_
+#define SBScriptName "instance_stormstout_brewery"
 
 enum DataTypes
 {
-    // Encounter States/Boss GUIDs
-    DATA_BANANA_EVENT = 0,
-    DATA_OOK_OOK      = 1,
-    DATA_RABBIT_EVENT = 2,
-    DATA_HOPTALLUS    = 3,
-    DATA_YAN_ZHU      = 4,
+    DATA_OOK_OOK   = 0,
+    DATA_HOPTALLUS = 1,
+    DATA_YAN_ZHU   = 2,
+
+    DATA_HOPLING,
+    DATA_GOLDEN_HOPLING
 };
 
-enum CreatureIds
+enum CreaturesIds
 {
-    NPC_OOK_OOK       = 56637,
-    NPC_ANIMAL1       = 56927,
-    NPC_ANIMAL2       = 59684,
-
-    NPC_HOPTALLUS     = 56717,
-    NPC_YAN_ZHU       = 59479,
+    NPC_OOK_OOK     = 56637,
+    NPC_HOPTALLUS   = 56717,
+    NPC_YAN_ZHU     = 59479
 };
 
 enum GameObjectIds
 {
-    // doors
+    GO_EXIT_OOK_OOK  = 211132,
+    GO_DOOR          = 211134,
+    GO_DOOR2         = 211133,
+    GO_DOOR3         = 211135,
+    GO_DOOR4         = 211137,
+    GO_LAST_DOOR     = 211136,
+    GO_CARROT_DOOR   = 211126
 };
 
-Position const OokOokLandPos = { -754.695f, 1348.25f, 147.35f, 1.83f };
-Position const BananaFleePos = { -771.177f, 1407.86f, 139.57f, 1.86f };
-
-Position const HoptallusLandPos = { -697.232f, 1260.42f, 162.79f, 0.33f };
-
-template<class AI>
-AI* GetStormstoutBreweryAI(Creature* creature)
+enum eMisc
 {
-    return GetInstanceAI<AI>(creature, StormstoutBreweryScriptName);
-}
+    NPC_BARREL                  = 56731,
 
-#endif // SF_STORMSTOUT_BREWERY_H_
+    //Pre event Hopper Summons (114363,114553)
+    NPC_HOPPER_HAMMER           = 59426,
+    NPC_BOPPER_EXPLOSIVE        = 56718,
+    
+    //Hoptallus Summons 
+    NPC_TRIGGER_SUMMONER        = 55091,
+    NPC_BOPPER_HAMMER           = 59551,
+    NPC_HOPPER_EXPLOSIVE        = 59464,
+    
+    SPELL_PROC_EXPLOSION        = 106787,
+    SPELL_GOLDEN_VERMING_ACHIEV = 116270,
+    SPELL_SMASH_OVERRIDE        = 111662,
+    SPELL_SMASH_DMG             = 111666,
+    SPELL_HOPPER_SUM_EXPLOSIVE  = 114363,
+    SPELL_HOPPER_SUM_HAMMER     = 114553,
+    SPELL_SMASH_ACHIEV          = 116286,
+    SPELL_HOPLING_AURA_3        = 114357,
+    SPELL_HOPLING_SUMM_3        = 114356
+};
+
+#endif

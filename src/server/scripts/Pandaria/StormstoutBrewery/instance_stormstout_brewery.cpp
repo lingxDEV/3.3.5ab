@@ -1,154 +1,218 @@
-/*
- * Copyright (C) 2011-2022 Project SkyFire <https://www.projectskyfire.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 3 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+/*====================
+======================*/
 
-#include "ScriptMgr.h"
-#include "InstanceScript.h"
 #include "stormstout_brewery.h"
 
 class instance_stormstout_brewery : public InstanceMapScript
 {
-    public:
-        instance_stormstout_brewery() : InstanceMapScript(StormstoutBreweryScriptName, 961) { }
+public:
+    instance_stormstout_brewery() : InstanceMapScript("instance_stormstout_brewery", 961) {}
 
-        struct instance_stormstout_brewery_InstanceScript : public InstanceScript
+    struct instance_stormstout_brewery_InstanceMapScript : public InstanceScript
+    {
+        instance_stormstout_brewery_InstanceMapScript(Map* map) : InstanceScript(map) {}
+
+        ObjectGuid ookookGuid;
+        ObjectGuid hoptallusGuid;
+        ObjectGuid yanzhuGuid;
+        ObjectGuid ookexitdoorGuid;
+        ObjectGuid doorGuid;
+        ObjectGuid door2Guid;
+        ObjectGuid door3Guid;
+        ObjectGuid door4Guid;
+        ObjectGuid lastdoorGuid;
+        ObjectGuid carrotdoorGuid;
+        ObjectGuid sTriggerGuid;
+        uint16 HoplingCount;
+        uint16 GoldenHoplingCount;
+
+        void Initialize() override
         {
-            instance_stormstout_brewery_InstanceScript(Map* map) : InstanceScript(map)
-            {
-                SetBossNumber(EncounterCount);
-                //LoadDoorData(doorData);
+            SetBossNumber(3);
+            ookookGuid.Clear();
+            hoptallusGuid.Clear();
+            yanzhuGuid.Clear();
+            ookexitdoorGuid.Clear();
+            doorGuid.Clear();
+            door2Guid.Clear();
+            door3Guid.Clear();
+            door4Guid.Clear();
+            lastdoorGuid.Clear();
+            carrotdoorGuid.Clear();
+            HoplingCount = 0;
+            GoldenHoplingCount = 0;
+            sTriggerGuid.Clear();
+        }
 
-                OokOokGUID       = 0;
-                HoptalusGUID     = 0;
-                YanZhuGUID       = 0;
-                BananaCount      = 0;
+        void OnGameObjectCreate(GameObject* go) override
+        {
+            switch (go->GetEntry())
+            {
+            case GO_EXIT_OOK_OOK:
+                ookexitdoorGuid = go->GetGUID();
+                break;
+            case GO_DOOR:
+                doorGuid = go->GetGUID();
+                break;
+            case GO_DOOR2:
+                door2Guid = go->GetGUID();
+                break;
+            case GO_DOOR3:
+                door3Guid = go->GetGUID();
+                break;
+            case GO_DOOR4:
+                door4Guid = go->GetGUID();
+                break;
+            case GO_LAST_DOOR:
+                lastdoorGuid = go->GetGUID();
+                break;
+            case GO_CARROT_DOOR:
+                carrotdoorGuid = go->GetGUID();
+                break;
             }
+        }
 
-            void OnCreatureCreate(Creature* creature) OVERRIDE
+        void OnCreatureCreate(Creature* creature) override
+        {
+            switch (creature->GetEntry())
             {
-                switch (creature->GetEntry())
-                {
-                    case NPC_OOK_OOK:
-                        OokOokGUID = creature->GetGUID();
-                        break;
-                    case NPC_HOPTALLUS:
-                        HoptalusGUID = creature->GetGUID();
-                        break;
-                    case NPC_YAN_ZHU:
-                        YanZhuGUID = creature->GetGUID();
-                        break;
-                    default:
-                        break;
-                }
+                case NPC_OOK_OOK:
+                    ookookGuid = creature->GetGUID();
+                    break;
+                case NPC_HOPTALLUS:
+                    hoptallusGuid = creature->GetGUID();
+                    break;
+                case NPC_YAN_ZHU:
+                    yanzhuGuid = creature->GetGUID();
+                    break;
+                case NPC_TRIGGER_SUMMONER:
+                    sTriggerGuid = creature->GetGUID();
+                    break;
             }
+        }
+        
+        bool SetBossState(uint32 id, EncounterState state) override
+        {
+            if (!InstanceScript::SetBossState(id, state))
+                return false;
 
-            //void OnGameObjectCreate(GameObject* go) OVERRIDE
-            //{}
-
-            //void OnGameObjectRemove(GameObject* go) OVERRIDE
-            //{}
-
-            uint64 GetData64(uint32 type) const OVERRIDE
+            switch (id)
             {
-                switch (type)
+            case DATA_OOK_OOK:
                 {
-                    case DATA_OOK_OOK:
-                        return OokOokGUID;
-                    case DATA_HOPTALLUS:
-                        return HoptalusGUID;
-                    case DATA_YAN_ZHU:
-                        return YanZhuGUID;
-                    case DATA_BANANA_EVENT:
-                        return BananaCount;
-                    default:
-                        break;
-                }
-                return 0;
-            }
-
-            void SetData(uint32 type, uint32 data) OVERRIDE
-            {
-                switch (type)
-                {
-                    case DATA_BANANA_EVENT:
-                        if (data == SPECIAL)
-                            ++BananaCount;
-                        else if (data == IN_PROGRESS)
-                            BananaCount = 0;
-                        break;
-                }
-            }
-
-            std::string GetSaveData() OVERRIDE
-            {
-                OUT_SAVE_INST_DATA;
-
-                std::ostringstream saveStream;
-                saveStream << "S S B " << GetBossSaveData();
-
-                OUT_SAVE_INST_DATA_COMPLETE;
-                return saveStream.str();
-            }
-
-            void Load(char const* str) OVERRIDE
-            {
-                if (!str)
-                {
-                    OUT_LOAD_INST_DATA_FAIL;
-                    return;
-                }
-
-                OUT_LOAD_INST_DATA(str);
-
-                char dataHead1, dataHead2, dataHead3;
-
-                std::istringstream loadStream(str);
-                loadStream >> dataHead1 >> dataHead2 >> dataHead3;
-
-                if (dataHead1 == 'S' && dataHead2 == 'S' && dataHead3 == 'B')
-                {
-                    for (uint32 i = 0; i < EncounterCount; ++i)
+                    if (state == DONE)
                     {
-                        uint32 tmpState;
-                        loadStream >> tmpState;
-                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
-                            tmpState = NOT_STARTED;
-                        SetBossState(i, EncounterState(tmpState));
+                        HandleGameObject(ookexitdoorGuid, true);
+                        HandleGameObject(doorGuid, true);
+                        HandleGameObject(door2Guid, true);
+                        if (auto trigger = instance->GetCreature(sTriggerGuid))
+                        {
+                            trigger->CastSpell(trigger, SPELL_HOPPER_SUM_EXPLOSIVE);
+                            trigger->CastSpell(trigger, SPELL_HOPPER_SUM_HAMMER);
+                            trigger->CastSpell(trigger, SPELL_HOPLING_AURA_3);
+                        }
                     }
                 }
-                else
-                    OUT_LOAD_INST_DATA_FAIL;
+                break;
+            case DATA_HOPTALLUS:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(door2Guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(door2Guid, false);
+                        if (auto trigger = instance->GetCreature(sTriggerGuid))
+                        {
+                            trigger->RemoveAurasDueToSpell(SPELL_HOPPER_SUM_EXPLOSIVE);
+                            trigger->RemoveAurasDueToSpell(SPELL_HOPPER_SUM_HAMMER);
+                            trigger->RemoveAurasDueToSpell(SPELL_HOPLING_AURA_3);
+                        }
+                        break;
+                    case DONE:
+                        {
+                            HandleGameObject(door2Guid, true);
+                            HandleGameObject(door3Guid, true);
+                            HandleGameObject(door4Guid, true);
+                            if (auto go = instance->GetGameObject(carrotdoorGuid))
+                                go->Delete();
+                        }
+                        break;
+                    }
+                }
+                break;
+            case DATA_YAN_ZHU:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(lastdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(lastdoorGuid, false);
+                        break;
+                    }
+                }
+                break;
+            }
+            return true;
+        }
 
-                OUT_LOAD_INST_DATA_COMPLETE;
+        void SetData(uint32 type, uint32 data) override
+        {
+            if (type == DATA_HOPLING)
+            {
+                HoplingCount = data;
+                if (HoplingCount > 100)
+                    HoplingCount = 100;
             }
 
-        protected:
-            uint64 OokOokGUID;
-            uint64 HoptalusGUID;
-            uint64 YanZhuGUID;
-            uint64 BananaCount;
-        };
-
-        InstanceScript* GetInstanceScript(InstanceMap* map) const OVERRIDE
-        {
-            return new instance_stormstout_brewery_InstanceScript(map);
+            if (type == DATA_GOLDEN_HOPLING)
+                GoldenHoplingCount = data;
         }
+
+        uint32 GetData(uint32 type) const override
+        {
+            if (type == DATA_HOPLING)
+                return HoplingCount;
+
+            if (type == DATA_GOLDEN_HOPLING)
+                return GoldenHoplingCount;
+
+            return 0;
+        }
+
+        ObjectGuid GetGuidData(uint32 type) const override
+        {
+            switch (type)
+            {
+                case NPC_OOK_OOK:
+                    return ookookGuid;
+                case NPC_HOPTALLUS:
+                    return hoptallusGuid;
+                case NPC_YAN_ZHU:
+                    return yanzhuGuid;
+            }
+
+            return ObjectGuid::Empty;
+        }
+
+        void Update(uint32 diff) override
+        {
+            // Challenge
+            InstanceScript::Update(diff);
+        }
+    };
+
+    InstanceScript* GetInstanceScript(InstanceMap* map) const override
+    {
+        return new instance_stormstout_brewery_InstanceMapScript(map);
+    }
 };
 
 void AddSC_instance_stormstout_brewery()
 {
-   new instance_stormstout_brewery();
+    new instance_stormstout_brewery();
 }
