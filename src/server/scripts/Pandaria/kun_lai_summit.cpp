@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2017-2019 AshamaneProject <https://github.com/AshamaneProject>
- * Copyright (C) 2016 Firestorm Servers <https://firestorm-servers.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
@@ -23,20 +5,30 @@
 #include "kun_lai_summit.h"
 
 #define GOSSIP_CHOICE_1 "I challenge you."
+#define CHECK_STATUS(a) (p_Player->GetQuestStatus(a) == QUEST_STATUS_INCOMPLETE)
 
 // Nessos the Oracle - 50789
 class mob_nessos_the_oracle : public CreatureScript
 {
     public:
-        mob_nessos_the_oracle() : CreatureScript("mob_nessos_the_oracle") {}
+        mob_nessos_the_oracle() : CreatureScript("mob_nessos_the_oracle")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_nessos_the_oracleAI(creature);
+        }
 
         struct mob_nessos_the_oracleAI : public ScriptedAI
         {
-            mob_nessos_the_oracleAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_nessos_the_oracleAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
             EventMap events;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -45,7 +37,7 @@ class mob_nessos_the_oracle : public CreatureScript
                 events.ScheduleEvent(EVENT_VANISH, 12000);
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -57,12 +49,12 @@ class mob_nessos_the_oracle : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_VICIOUS_REND:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_VICIOUS_REND, false);
                             events.ScheduleEvent(EVENT_VICIOUS_REND,      7000);
                             break;
                         case EVENT_GRAPPLING_HOOK:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_GRAPPLING_HOOK, false);
                             events.ScheduleEvent(EVENT_GRAPPLING_HOOK, 17000);
                             break;
@@ -72,7 +64,7 @@ class mob_nessos_the_oracle : public CreatureScript
                             events.ScheduleEvent(EVENT_SMOKED_BLADE, urand(0, 8000));
                             break;
                         case EVENT_SMOKED_BLADE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_SMOKED_BLADE, false);
 
                             break;
@@ -84,26 +76,30 @@ class mob_nessos_the_oracle : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_nessos_the_oracleAI(creature);
-        }
 };
 
 // Ski'thik - 50733
 class mob_ski_thik : public CreatureScript
 {
     public:
-        mob_ski_thik() : CreatureScript("mob_ski_thik") {}
+        mob_ski_thik() : CreatureScript("mob_ski_thik")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_ski_thikAI(creature);
+        }
 
         struct mob_ski_thikAI : public ScriptedAI
         {
-            mob_ski_thikAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_ski_thikAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
             EventMap events;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -112,7 +108,7 @@ class mob_ski_thik : public CreatureScript
                 events.ScheduleEvent(EVENT_WINDSONG,        32000);
             }
 
-            void JustSummoned(Creature* summon) override
+            void JustSummoned(Creature* summon)
             {
                 if (summon->GetEntry() == 64267)
                 {
@@ -122,7 +118,7 @@ class mob_ski_thik : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -138,17 +134,17 @@ class mob_ski_thik : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_BLADE_FURY:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_BLADE_FURY, false);
                             events.ScheduleEvent(EVENT_BLADE_FURY,      8000);
                             break;
                         case EVENT_TORNADO:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_TORNADO, false);
                             events.ScheduleEvent(EVENT_TORNADO, 40000);
                             break;
                         case EVENT_WINDSONG:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_WINDSONG, false);
                             events.ScheduleEvent(EVENT_WINDSONG, 32000);
                             break;
@@ -161,26 +157,30 @@ class mob_ski_thik : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_ski_thikAI(creature);
-        }
 };
 
 // Havak - 50354
 class mob_havak : public CreatureScript
 {
     public:
-        mob_havak() : CreatureScript("mob_havak") {}
+        mob_havak() : CreatureScript("mob_havak")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_havakAI(creature);
+        }
 
         struct mob_havakAI : public ScriptedAI
         {
-            mob_havakAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_havakAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
             EventMap events;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -189,7 +189,7 @@ class mob_havak : public CreatureScript
                 events.ScheduleEvent(EVENT_TITANIC_STRENGH,   32000);
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -204,12 +204,12 @@ class mob_havak : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_DEVASTATING_ARC:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_DEVASTATING_ARC, false);
                             events.ScheduleEvent(EVENT_DEVASTATING_ARC,      50000);
                             break;
                         case EVENT_SUMMON_QUILEN:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_SUMMON_QUILEN, false);
                             events.ScheduleEvent(EVENT_SUMMON_QUILEN, 80000);
                             break;
@@ -227,26 +227,30 @@ class mob_havak : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_havakAI(creature);
-        }
 };
 
 // Mogujia Soul-Caller - 59797
 class mob_mogujia_soul_caller : public CreatureScript
 {
     public:
-        mob_mogujia_soul_caller() : CreatureScript("mob_mogujia_soul_caller") {}
+        mob_mogujia_soul_caller() : CreatureScript("mob_mogujia_soul_caller")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_mogujia_soul_callerAI(creature);
+        }
 
         struct mob_mogujia_soul_callerAI : public ScriptedAI
         {
-            mob_mogujia_soul_callerAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_mogujia_soul_callerAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
             EventMap events;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -255,7 +259,7 @@ class mob_mogujia_soul_caller : public CreatureScript
                 events.ScheduleEvent(EVENT_SHADOW_CRASH,    32000);
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -270,12 +274,12 @@ class mob_mogujia_soul_caller : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_DRAIN_LIFE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_DRAIN_LIFE, false);
                             events.ScheduleEvent(EVENT_DRAIN_LIFE,      20000);
                             break;
                         case EVENT_SHADOW_BOLT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_SHADOW_BOLT, false);
                             events.ScheduleEvent(EVENT_SHADOW_BOLT, 15000);
                             break;
@@ -292,32 +296,36 @@ class mob_mogujia_soul_caller : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_mogujia_soul_callerAI(creature);
-        }
 };
 
 // Quilen Stonemaw - 64014
 class mob_quilen_stonemaw : public CreatureScript
 {
     public:
-        mob_quilen_stonemaw() : CreatureScript("mob_quilen_stonemaw") {}
+        mob_quilen_stonemaw() : CreatureScript("mob_quilen_stonemaw")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_quilen_stonemawAI(creature);
+        }
 
         struct mob_quilen_stonemawAI : public ScriptedAI
         {
-            mob_quilen_stonemawAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_quilen_stonemawAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
             EventMap events;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
                 events.ScheduleEvent(EVENT_UNSTABLE_SERUM,      5000);
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -345,26 +353,30 @@ class mob_quilen_stonemaw : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_quilen_stonemawAI(creature);
-        }
 };
 
 // Zai the Outcast - 50769
 class mob_zai_the_outcast : public CreatureScript
 {
     public:
-        mob_zai_the_outcast() : CreatureScript("mob_zai_the_outcast") {}
+        mob_zai_the_outcast() : CreatureScript("mob_zai_the_outcast")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_zai_the_outcastAI(creature);
+        }
 
         struct mob_zai_the_outcastAI : public ScriptedAI
         {
-            mob_zai_the_outcastAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_zai_the_outcastAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
             EventMap events;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -373,7 +385,7 @@ class mob_zai_the_outcast : public CreatureScript
                 events.ScheduleEvent(EVENT_WATER_BOLT,      32000);
             }
 
-            void JustSummoned(Creature* summon) override
+            void JustSummoned(Creature* summon)
             {
                 if (summon->GetEntry() == 64267)
                 {
@@ -383,7 +395,7 @@ class mob_zai_the_outcast : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -398,17 +410,17 @@ class mob_zai_the_outcast : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_RAIN_DANCE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_RAIN_DANCE, false);
                             events.ScheduleEvent(EVENT_RAIN_DANCE,      8000);
                             break;
                         case EVENT_TORRENT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_TORRENT, false);
                             events.ScheduleEvent(EVENT_TORRENT, 40000);
                             break;
                         case EVENT_WATER_BOLT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_WATER_BOLT, false);
                             events.ScheduleEvent(EVENT_WATER_BOLT, 32000);
                             break;
@@ -421,26 +433,32 @@ class mob_zai_the_outcast : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_zai_the_outcastAI(creature);
-        }
 };
 
 // Zhi the Harmonious - 64537
 class mob_zhi_the_harmonious : public CreatureScript
 {
     public:
-        mob_zhi_the_harmonious() : CreatureScript("mob_zhi_the_harmonious") {}
+        mob_zhi_the_harmonious() : CreatureScript("mob_zhi_the_harmonious")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_zhi_the_harmoniousAI(creature);
+        }
 
         struct mob_zhi_the_harmoniousAI : public ScriptedAI
         {
-            mob_zhi_the_harmoniousAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_zhi_the_harmoniousAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
-            void Reset() override {}
+            void Reset()
+            {
+            }
 
-            void DoAction(int32 action) override
+            void DoAction(const int32 action)
             {
                 switch (action)
                 {
@@ -455,30 +473,36 @@ class mob_zhi_the_harmonious : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 /*diff*/) override
+            void UpdateAI(const uint32 diff)
             {
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_zhi_the_harmoniousAI(creature);
-        }
 };
 
 // Anduin Wrynn - 64540
 class mob_andruin_wrynn : public CreatureScript
 {
     public:
-        mob_andruin_wrynn() : CreatureScript("mob_andruin_wrynn") {}
+        mob_andruin_wrynn() : CreatureScript("mob_andruin_wrynn")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_andruin_wrynnAI(creature);
+        }
 
         struct mob_andruin_wrynnAI : public ScriptedAI
         {
-            mob_andruin_wrynnAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_andruin_wrynnAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
-            void Reset() override {}
+            void Reset()
+            {
+            }
 
-            void DoAction(int32 action) override
+            void DoAction(const int32 action)
             {
                 switch (action)
                 {
@@ -499,30 +523,36 @@ class mob_andruin_wrynn : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 /*diff*/) override
+            void UpdateAI(const uint32 diff)
             {
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_andruin_wrynnAI(creature);
-        }
 };
 
 // Taran Zhu - 64536
 class mob_taran_zhu_white_tiger : public CreatureScript
 {
     public:
-        mob_taran_zhu_white_tiger() : CreatureScript("mob_taran_zhu_white_tiger") {}
+        mob_taran_zhu_white_tiger() : CreatureScript("mob_taran_zhu_white_tiger")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_taran_zhu_white_tigerAI(creature);
+        }
 
         struct mob_taran_zhu_white_tigerAI : public ScriptedAI
         {
-            mob_taran_zhu_white_tigerAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_taran_zhu_white_tigerAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
-            void Reset() override {}
+            void Reset()
+            {
+            }
 
-            void DoAction(int32 action) override
+            void DoAction(const int32 action)
             {
                 switch (action)
                 {
@@ -543,24 +573,21 @@ class mob_taran_zhu_white_tiger : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 /*diff*/) override
+            void UpdateAI(const uint32 diff)
             {
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_taran_zhu_white_tigerAI(creature);
-        }
 };
 
 // Xuen - 64528
 class npc_xuen : public CreatureScript
 {
     public:
-        npc_xuen() : CreatureScript("npc_xuen") {}
+        npc_xuen() : CreatureScript("npc_xuen")
+        {
+        }
 
-        bool OnGossipHello(Player* player, Creature* creature) override
+        bool OnGossipHello(Player* player, Creature* creature)
         {
             if (!creature->AI())
                 return false;
@@ -571,7 +598,7 @@ class npc_xuen : public CreatureScript
                 {
                     creature->AI()->DoAction(ACTION_CONVERSATION);
                     player->KilledMonsterCredit(KILLED_CREDIT_FIRST_PHASE);
-                    creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                    creature->AI()->SetGUID(player ? player->GetGUID() : 0);
                     creature->AI()->SetData(XUEN_PHASE_1, DONE);
                 }
 
@@ -593,28 +620,36 @@ class npc_xuen : public CreatureScript
             return true;
         }
 
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_xuenAI(creature);
+        }
+
         struct npc_xuenAI : public ScriptedAI
         {
-            npc_xuenAI(Creature* creature) : ScriptedAI(creature) {}
+            npc_xuenAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
             uint32 phaseDone[XUEN_PHASE_MAX];
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
                 for (int i = 0; i < XUEN_PHASE_MAX; i++)
                     phaseDone[i] = NOT_STARTED;
             }
 
-            void SetGUID(ObjectGuid guid, int32 /*id*/ /*= 0*/) override
+            void SetGUID(uint64 guid, int32 id /*= 0*/)
             {
-                playerGUID = guid;
+                playerGuid = guid;
             }
 
-            uint32 GetData(uint32 index) const override
+            uint32 GetData(uint32 index)
             {
                 if (index >= XUEN_PHASE_MAX)
                     return 0;
@@ -622,7 +657,7 @@ class npc_xuen : public CreatureScript
                 return phaseDone[index];
             }
 
-            void SetData(uint32 index, uint32 value) override
+            void SetData(uint32 index, uint32 value)
             {
                 if (index >= XUEN_PHASE_MAX)
                     return;
@@ -630,7 +665,7 @@ class npc_xuen : public CreatureScript
                 phaseDone[index] = value;
             }
 
-            void DoAction(int32 action) override
+            void DoAction(const int32 action)
             {
                 switch (action)
                 {
@@ -682,24 +717,24 @@ class npc_xuen : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 events.Update(diff);
 
-                if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
+                if (Player* player = Player::GetPlayer(*me, playerGuid))
                 {
 
                     if (player->GetQuestStatus(QUEST_A_CELESTIAL_EXPERIENCE_H) != QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_A_CELESTIAL_EXPERIENCE_A) != QUEST_STATUS_INCOMPLETE)
                         return;
 
                     std::list<Creature*> TaranZhuList;
-                    me->GetCreatureListWithEntryInGrid(TaranZhuList, NPC_TARAN_ZHU, 15.0f);
+                    GetCreatureListWithEntryInGrid(TaranZhuList, me, NPC_TARAN_ZHU, 15.0f);
 
                     std::list<Creature*> andruinWrynnList;
-                    me->GetCreatureListWithEntryInGrid(andruinWrynnList, NPC_ANDRUIN_WRYNN, 15.0f);
+                    GetCreatureListWithEntryInGrid(andruinWrynnList, me, NPC_ANDRUIN_WRYNN, 15.0f);
 
                     std::list<Creature*> zhiList;
-                    me->GetCreatureListWithEntryInGrid(zhiList, NPC_ZHI_THE_HARMONIOUS, 15.0f);
+                    GetCreatureListWithEntryInGrid(zhiList, me, NPC_ZHI_THE_HARMONIOUS, 15.0f);
 
                     while (uint32 eventId = events.ExecuteEvent())
                     {
@@ -730,8 +765,10 @@ class npc_xuen : public CreatureScript
                                 player->TeleportTo(870, 3770.889f, 538.036f, 639.046f, 0.0f);
                                 break;
                             case EVENT_SPAWN_SPIRIT_OF_VIOLENCE:
+                            {
                                 me->SummonCreature(MOB_SPIRIT_OF_VIOLENCE, 3778.698f, 539.101f, 639.007f);
                                 break;
+                            }
                             case EVENT_TARAN_ZHU_TALK_3:
                                 if (!TaranZhuList.empty())
                                     for (auto TaranZhu: TaranZhuList)
@@ -799,30 +836,32 @@ class npc_xuen : public CreatureScript
                 }
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new npc_xuenAI(creature);
-        }
 };
 
 // Spirit of Violence - 64656
 class mob_spirit_of_violence : public CreatureScript
 {
     public:
-        mob_spirit_of_violence() : CreatureScript("mob_spirit_of_violence") {}
+        mob_spirit_of_violence() : CreatureScript("mob_spirit_of_violence")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_spirit_of_violenceAI(creature);
+        }
 
         struct mob_spirit_of_violenceAI : public ScriptedAI
         {
             mob_spirit_of_violenceAI(Creature* creature) : ScriptedAI(creature)
             {
-                xuenGUID = ObjectGuid::Empty;
+                xuenGUID = 0;
             }
 
             EventMap events;
-            ObjectGuid xuenGUID;
+            uint64 xuenGUID;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -831,7 +870,7 @@ class mob_spirit_of_violence : public CreatureScript
                 events.ScheduleEvent(EVENT_SHA_CORRUPTION, 23000);
             }
 
-            void JustDied(Unit* /*killer*/) override
+            void JustDied(Unit* killer)
             {
                 Creature* xuen = me->GetMap()->GetCreature(xuenGUID);
                 if (!xuen || !xuen->GetAI())
@@ -840,7 +879,7 @@ class mob_spirit_of_violence : public CreatureScript
                 xuen->AI()->SetData(XUEN_PHASE_2, DONE);
             }
 
-            void IsSummonedBy(Unit* summoner) override
+            void IsSummonedBy(Unit* summoner)
             {
                 if (!summoner)
                     return;
@@ -848,7 +887,7 @@ class mob_spirit_of_violence : public CreatureScript
                 xuenGUID = summoner->GetGUID();
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -867,7 +906,7 @@ class mob_spirit_of_violence : public CreatureScript
                             events.ScheduleEvent(EVENT_UNTAMED_FURY,      20000);
                             break;
                         case EVENT_HATED_BLAST:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_HATED_BLAST, false);
                             events.ScheduleEvent(EVENT_HATED_BLAST, 20000);
                             break;
@@ -884,30 +923,32 @@ class mob_spirit_of_violence : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_spirit_of_violenceAI(creature);
-        }
 };
 
 // Spirit of Anger - 64684
 class mob_spirit_of_anger : public CreatureScript
 {
     public:
-        mob_spirit_of_anger() : CreatureScript("mob_spirit_of_anger") {}
+        mob_spirit_of_anger() : CreatureScript("mob_spirit_of_anger")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_spirit_of_angerAI(creature);
+        }
 
         struct mob_spirit_of_angerAI : public ScriptedAI
         {
             mob_spirit_of_angerAI(Creature* creature) : ScriptedAI(creature)
             {
-                xuenGUID = ObjectGuid::Empty;
+                xuenGUID = 0;
             }
 
             EventMap events;
-            ObjectGuid xuenGUID;
+            uint64 xuenGUID;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -916,7 +957,7 @@ class mob_spirit_of_anger : public CreatureScript
                 events.ScheduleEvent(EVENT_SHA_CORRUPTION, 23000);
             }
 
-            void JustDied(Unit* /*killer*/) override
+            void JustDied(Unit* killer)
             {
                 Creature* xuen = me->GetMap()->GetCreature(xuenGUID);
                 if (!xuen || !xuen->GetAI())
@@ -925,15 +966,15 @@ class mob_spirit_of_anger : public CreatureScript
                 xuen->AI()->SetData(XUEN_PHASE_3, DONE);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32 &damage) override
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if(me->HealthBelowPctDamaged(20, damage))
+                if (me->HealthBelowPctDamaged(20, damage))
                 {
                     me->SummonCreature(MOB_SPIRIT_OF_VIOLENCE, 3778.698f, 539.101f, 639.007f);
                 }
             }
 
-            void IsSummonedBy(Unit* summoner) override
+            void IsSummonedBy(Unit* summoner)
             {
                 if (!summoner)
                     return;
@@ -941,7 +982,7 @@ class mob_spirit_of_anger : public CreatureScript
                 xuenGUID = summoner->GetGUID();
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -956,12 +997,12 @@ class mob_spirit_of_anger : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_DEVASTATION:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_DEVASTATION, false);
                             events.ScheduleEvent(EVENT_DEVASTATION,      20000);
                             break;
                         case EVENT_HATED_BLAST:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_HATED_BLAST, false);
                             events.ScheduleEvent(EVENT_HATED_BLAST, 20000);
                             break;
@@ -978,30 +1019,32 @@ class mob_spirit_of_anger : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_spirit_of_angerAI(creature);
-        }
 };
 
 // Spirit of Hatred - 64742/64744
 class mob_spirit_of_hatred : public CreatureScript
 {
     public:
-        mob_spirit_of_hatred() : CreatureScript("mob_spirit_of_hatred") {}
+        mob_spirit_of_hatred() : CreatureScript("mob_spirit_of_hatred")
+        {
+        }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_spirit_of_hatredAI(creature);
+        }
 
         struct mob_spirit_of_hatredAI : public ScriptedAI
         {
             mob_spirit_of_hatredAI(Creature* creature) : ScriptedAI(creature)
             {
-                xuenGUID = ObjectGuid::Empty;
+                xuenGUID = 0;
             }
 
             EventMap events;
-            ObjectGuid xuenGUID;
+            uint64 xuenGUID;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -1011,7 +1054,7 @@ class mob_spirit_of_hatred : public CreatureScript
                 events.ScheduleEvent(EVENT_WHIRLWIND_OF_ANGER, 32000);
             }
 
-            void JustDied(Unit* /*killer*/) override
+            void JustDied(Unit* killer)
             {
                 Creature* xuen = me->GetMap()->GetCreature(xuenGUID);
                 if (!xuen || !xuen->GetAI())
@@ -1021,7 +1064,7 @@ class mob_spirit_of_hatred : public CreatureScript
                 xuen->AI()->DoAction(ACTION_FINAL_KILL_CREDIT);
             }
 
-            void IsSummonedBy(Unit* summoner) override
+            void IsSummonedBy(Unit* summoner)
             {
                 if (!summoner)
                     return;
@@ -1029,7 +1072,7 @@ class mob_spirit_of_hatred : public CreatureScript
                 xuenGUID = summoner->GetGUID();
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1044,12 +1087,12 @@ class mob_spirit_of_hatred : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_DEVASTATION:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_DEVASTATION, false);
                             events.ScheduleEvent(EVENT_DEVASTATION, 20000);
                             break;
                         case EVENT_HATED_BLAST:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_HATED_BLAST, false);
                             events.ScheduleEvent(EVENT_HATED_BLAST, 20000);
                             break;
@@ -1071,49 +1114,46 @@ class mob_spirit_of_hatred : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_spirit_of_hatredAI(creature);
-        }
 };
 
 // Xuen - 60968
 class npc_questgiver_xuen : public CreatureScript
 {
     public:
-        npc_questgiver_xuen() : CreatureScript("npc_questgiver_xuen") {}
+        npc_questgiver_xuen() : CreatureScript("npc_questgiver_xuen")
+        {
+        }
 
-        bool OnQuestAccept(Player* player, Creature* /*creature*/, Quest const* quest) override
+        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
         {
             switch (quest->GetQuestId())
             {
                 case 30880:
-                    player->SummonCreature(60994, 3455.440f, 396.495f, 587.990f, 3.534870f);
+                    player->SummonCreature(60994, 3455.440f, 396.495f, 587.990f, 3.534870f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 case 30879:
-                    player->SummonCreature(60996, 3455.440f, 396.495f, 587.990f, 3.534870f);
+                    player->SummonCreature(60996, 3455.440f, 396.495f, 587.990f, 3.534870f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 case 30882:
-                    player->SummonCreature(60978, 3727.387f, 354.103f, 596.644f, 2.873523f);
+                    player->SummonCreature(60978, 3727.387f, 354.103f, 596.644f, 2.873523f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 case 30881:
-                    player->SummonCreature(60980, 3727.387f, 354.103f, 596.644f, 2.873523f);
-                    player->SummonCreature(60979, 3732.874f, 356.998f, 596.645f, 3.010161f);
+                    player->SummonCreature(60980, 3727.387f, 354.103f, 596.644f, 2.873523f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
+                    player->SummonCreature(60979, 3732.874f, 356.998f, 596.645f, 3.010161f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 case 30883:
-                    player->SummonCreature(60997, 3678.923f, 668.206f, 636.749f, 4.385365f);
+                    player->SummonCreature(60997, 3678.923f, 668.206f, 636.749f, 4.385365f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 case 30885:
-                    player->SummonCreature(61013, 3678.923f, 668.206f, 636.749f, 4.385365f);
+                    player->SummonCreature(61013, 3678.923f, 668.206f, 636.749f, 4.385365f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 case 30902:
-                    player->SummonCreature(61012, 3795.768f, 533.490f, 639.007f, 2.990473f);
+                    player->SummonCreature(61012, 3795.768f, 533.490f, 639.007f, 2.990473f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 case 30907:
-                    player->SummonCreature(61006, 3795.768f, 533.490f, 639.007f, 2.990473f);
-                    player->SummonCreature(61004, 3794.767f, 524.924f, 639.007f, 2.990473f);
-                    player->SummonCreature(61007, 3796.669f, 542.368f, 639.007f, 2.990473f);
+                    player->SummonCreature(61006, 3795.768f, 533.490f, 639.007f, 2.990473f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
+                    player->SummonCreature(61004, 3794.767f, 524.924f, 639.007f, 2.990473f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
+                    player->SummonCreature(61007, 3796.669f, 542.368f, 639.007f, 2.990473f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
                     break;
                 default:
                     break;
@@ -1127,28 +1167,30 @@ class npc_questgiver_xuen : public CreatureScript
 class mob_lun_chi : public CreatureScript
 {
     public:
-        mob_lun_chi() : CreatureScript("mob_lun_chi") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_lun_chi() : CreatureScript("mob_lun_chi")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30880) == QUEST_STATUS_INCOMPLETE)
                 {
-                    creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
-                    creature->SetFaction(14);
+                    creature->AI()->SetGUID(player ? player->GetGUID() : 0);
+                    creature->setFaction(14);
 
                     if (creature->GetAI())
                     {
@@ -1160,17 +1202,22 @@ class mob_lun_chi : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_lun_chiAI(creature);
+        }
+
         struct mob_lun_chiAI : public ScriptedAI
         {
             mob_lun_chiAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -1179,7 +1226,7 @@ class mob_lun_chi : public CreatureScript
                 events.ScheduleEvent(EVENT_SPINNING_CRANE_KICK, 23000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -1197,37 +1244,37 @@ class mob_lun_chi : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -1252,7 +1299,7 @@ class mob_lun_chi : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_CHI_TORPEDO:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_CHI_TORPEDO, false);
                             events.ScheduleEvent(EVENT_CHI_TORPEDO, 28000);
                             break;
@@ -1277,39 +1324,36 @@ class mob_lun_chi : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_lun_chiAI(creature);
-        }
 };
 
 // Brewmaster Chani - 60996
 class mob_brewmaster_chani : public CreatureScript
 {
     public:
-        mob_brewmaster_chani() : CreatureScript("mob_brewmaster_chani") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_brewmaster_chani() : CreatureScript("mob_brewmaster_chani")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30879) == QUEST_STATUS_INCOMPLETE)
                 {
-                    creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
-                    creature->SetFaction(14);
+                    creature->AI()->SetGUID(player ? player->GetGUID() : 0);
+                    creature->setFaction(14);
 
                     if (creature->GetAI())
                     {
@@ -1321,17 +1365,22 @@ class mob_brewmaster_chani : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_brewmaster_chaniAI(creature);
+        }
+
         struct mob_brewmaster_chaniAI : public ScriptedAI
         {
             mob_brewmaster_chaniAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -1339,7 +1388,7 @@ class mob_brewmaster_chani : public CreatureScript
                 events.ScheduleEvent(EVENT_THE_STEAMER, 12000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -1357,37 +1406,37 @@ class mob_brewmaster_chani : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -1412,7 +1461,7 @@ class mob_brewmaster_chani : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_BITTER_BREW:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_BITTER_BREW, false);
                             events.ScheduleEvent(EVENT_BITTER_BREW, 18000);
                             break;
@@ -1432,39 +1481,36 @@ class mob_brewmaster_chani : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_brewmaster_chaniAI(creature);
-        }
 };
 
 // Kang Bramblestaff - 60978
 class mob_kang_bramblestaff : public CreatureScript
 {
     public:
-        mob_kang_bramblestaff() : CreatureScript("mob_kang_bramblestaff") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_kang_bramblestaff() : CreatureScript("mob_kang_bramblestaff")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30882) == QUEST_STATUS_INCOMPLETE)
                 {
-                    creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
-                    creature->SetFaction(14);
+                    creature->AI()->SetGUID(player ? player->GetGUID() : 0);
+                    creature->setFaction(14);
 
                     if (creature->GetAI())
                     {
@@ -1476,17 +1522,22 @@ class mob_kang_bramblestaff : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_kang_bramblestaffAI(creature);
+        }
+
         struct mob_kang_bramblestaffAI : public ScriptedAI
         {
             mob_kang_bramblestaffAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -1495,7 +1546,7 @@ class mob_kang_bramblestaff : public CreatureScript
                 events.ScheduleEvent(EVENT_WHIRLWIND, 20000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -1513,37 +1564,37 @@ class mob_kang_bramblestaff : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -1568,7 +1619,7 @@ class mob_kang_bramblestaff : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_DEATH_FROM_ABOVE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_DEATH_FROM_ABOVE, false);
                             events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 25000);
                             break;
@@ -1593,52 +1644,49 @@ class mob_kang_bramblestaff : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_kang_bramblestaffAI(creature);
-        }
 };
 
 // Clever Ashyo - 60980
 class mob_clever_ashyo : public CreatureScript
 {
     public:
-        mob_clever_ashyo() : CreatureScript("mob_clever_ashyo") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_clever_ashyo() : CreatureScript("mob_clever_ashyo")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30881) == QUEST_STATUS_INCOMPLETE)
                 {
                     if (Creature* kenKen = GetClosestCreatureWithEntry(creature, 60979, 20.0f, true))
                     {
-                        creature->SetFaction(14);
-                        kenKen->SetFaction(14);
+                        creature->setFaction(14);
+                        kenKen->setFaction(14);
 
                         if (creature->GetAI())
                         {
-                            creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                            creature->AI()->SetGUID(player ? player->GetGUID() : 0);
                             creature->AI()->Reset();
                             creature->AI()->DoAction(ACTION_REMOVE_FLAG);
                         }
 
                         if (kenKen->GetAI())
                         {
-                            kenKen->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                            kenKen->AI()->SetGUID(player ? player->GetGUID() : 0);
                             kenKen->AI()->Reset();
                             kenKen->AI()->DoAction(ACTION_REMOVE_FLAG);
                         }
@@ -1648,17 +1696,22 @@ class mob_clever_ashyo : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_clever_ashyoAI(creature);
+        }
+
         struct mob_clever_ashyoAI : public ScriptedAI
         {
             mob_clever_ashyoAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -1666,7 +1719,7 @@ class mob_clever_ashyo : public CreatureScript
                 events.ScheduleEvent(EVENT_WATER_SPOUT, 12000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -1684,33 +1737,33 @@ class mob_clever_ashyo : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void EnterCombat(Unit* victim) override
+            void EnterCombat(Unit* victim)
             {
                 if (Creature* kenKen = GetClosestCreatureWithEntry(me, 60979, 20.0f, true))
                 {
@@ -1721,11 +1774,11 @@ class mob_clever_ashyo : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -1750,7 +1803,8 @@ class mob_clever_ashyo : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_HEALING_SPHERE:
-                            me->CastSpell(me, SPELL_HEALING_SPHERE, false);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(me, SPELL_HEALING_SPHERE, false);
                             events.ScheduleEvent(EVENT_HEALING_SPHERE, 18000);
                             break;
                         case EVENT_WATER_SPOUT:
@@ -1769,52 +1823,49 @@ class mob_clever_ashyo : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_clever_ashyoAI(creature);
-        }
 };
 
 // Ken-Ken - 60979
 class mob_ken_ken : public CreatureScript
 {
     public:
-        mob_ken_ken() : CreatureScript("mob_ken_ken") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_ken_ken() : CreatureScript("mob_ken_ken")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30881) == QUEST_STATUS_INCOMPLETE)
                 {
                     if (Creature* ashyo = GetClosestCreatureWithEntry(creature, 60980, 20.0f, true))
                     {
-                        creature->SetFaction(14);
-                        ashyo->SetFaction(14);
+                        creature->setFaction(14);
+                        ashyo->setFaction(14);
 
                         if (creature->GetAI())
                         {
-                            creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                            creature->AI()->SetGUID(player ? player->GetGUID() : 0);
                             creature->AI()->Reset();
                             creature->AI()->DoAction(ACTION_REMOVE_FLAG);
                         }
 
                         if (ashyo->GetAI())
                         {
-                            ashyo->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                            ashyo->AI()->SetGUID(player ? player->GetGUID() : 0);
                             ashyo->AI()->Reset();
                             ashyo->AI()->DoAction(ACTION_REMOVE_FLAG);
                         }
@@ -1824,17 +1875,22 @@ class mob_ken_ken : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_ken_kenAI(creature);
+        }
+
         struct mob_ken_kenAI : public ScriptedAI
         {
             mob_ken_kenAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -1842,7 +1898,7 @@ class mob_ken_ken : public CreatureScript
                 events.ScheduleEvent(EVENT_KEN_KEN_RAMPAGE, 12000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -1860,18 +1916,18 @@ class mob_ken_ken : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void EnterCombat(Unit* victim) override
+            void EnterCombat(Unit* victim)
             {
                 if (Creature* ashyo = GetClosestCreatureWithEntry(me, 60980, 20.0f, true))
                 {
@@ -1882,26 +1938,26 @@ class mob_ken_ken : public CreatureScript
                 }
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -1926,7 +1982,8 @@ class mob_ken_ken : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_ENRAGE:
-                            me->CastSpell(me, SPELL_ENRAGE, false);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(me, SPELL_ENRAGE, false);
                             events.ScheduleEvent(EVENT_ENRAGE, 18000);
                             break;
                         case EVENT_KEN_KEN_RAMPAGE:
@@ -1945,39 +2002,36 @@ class mob_ken_ken : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_ken_kenAI(creature);
-        }
 };
 
 // The Wrestler - 60997
 class mob_the_wrestler : public CreatureScript
 {
     public:
-        mob_the_wrestler() : CreatureScript("mob_the_wrestler") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_the_wrestler() : CreatureScript("mob_the_wrestler")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30883) == QUEST_STATUS_INCOMPLETE)
                 {
-                    creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
-                    creature->SetFaction(14);
+                    creature->AI()->SetGUID(player ? player->GetGUID() : 0);
+                    creature->setFaction(14);
 
                     if (creature->GetAI())
                     {
@@ -1989,17 +2043,22 @@ class mob_the_wrestler : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_the_wrestlerAI(creature);
+        }
+
         struct mob_the_wrestlerAI : public ScriptedAI
         {
             mob_the_wrestlerAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -2008,7 +2067,7 @@ class mob_the_wrestler : public CreatureScript
                 events.ScheduleEvent(EVENT_VULNERABLE, 43000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -2026,37 +2085,37 @@ class mob_the_wrestler : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -2081,17 +2140,17 @@ class mob_the_wrestler : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_GRAPPLE_OPPONENT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_GRAPPLE_OPPONENT, false);
                             events.ScheduleEvent(EVENT_GRAPPLE_OPPONENT, 25000);
                             break;
                         case EVENT_SLING_SWEAT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_SLING_SWEAT, false);
                             events.ScheduleEvent(EVENT_SLING_SWEAT, 25000);
                             break;
                         case EVENT_VULNERABLE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_VULNERABLE, false);
                             events.ScheduleEvent(EVENT_VULNERABLE, 50000);
                             break;
@@ -2106,39 +2165,36 @@ class mob_the_wrestler : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_the_wrestlerAI(creature);
-        }
 };
 
 // Master Boom Boom - 61013
 class mob_master_boom_boom : public CreatureScript
 {
     public:
-        mob_master_boom_boom() : CreatureScript("mob_master_boom_boom") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_master_boom_boom() : CreatureScript("mob_master_boom_boom")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30885) == QUEST_STATUS_INCOMPLETE)
                 {
-                    creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
-                    creature->SetFaction(14);
+                    creature->AI()->SetGUID(player ? player->GetGUID() : 0);
+                    creature->setFaction(14);
 
                     if (creature->GetAI())
                     {
@@ -2150,17 +2206,22 @@ class mob_master_boom_boom : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_master_boom_boomAI(creature);
+        }
+
         struct mob_master_boom_boomAI : public ScriptedAI
         {
             mob_master_boom_boomAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -2168,7 +2229,7 @@ class mob_master_boom_boom : public CreatureScript
                 events.ScheduleEvent(EVENT_TOSS_A_BOOM_BOOM, 12000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -2186,37 +2247,37 @@ class mob_master_boom_boom : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -2241,12 +2302,12 @@ class mob_master_boom_boom : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_HEAVY_DYNAMITE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_HEAVY_DYNAMITE, false);
                             events.ScheduleEvent(EVENT_HEAVY_DYNAMITE, 18000);
                             break;
                         case EVENT_TOSS_A_BOOM_BOOM:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_TOSS_A_BOOM_BOOM, false);
                             events.ScheduleEvent(EVENT_TOSS_A_BOOM_BOOM, 18000);
                             break;
@@ -2261,39 +2322,36 @@ class mob_master_boom_boom : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_master_boom_boomAI(creature);
-        }
 };
 
 // Master Windfur - 61012
 class mob_master_windfur : public CreatureScript
 {
     public:
-        mob_master_windfur() : CreatureScript("mob_master_windfur") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_master_windfur() : CreatureScript("mob_master_windfur")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30902) == QUEST_STATUS_INCOMPLETE)
                 {
-                    creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
-                    creature->SetFaction(14);
+                    creature->AI()->SetGUID(player ? player->GetGUID() : 0);
+                    creature->setFaction(14);
 
                     if (creature->GetAI())
                     {
@@ -2305,25 +2363,30 @@ class mob_master_windfur : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_master_windfurAI(creature);
+        }
+
         struct mob_master_windfurAI : public ScriptedAI
         {
             mob_master_windfurAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
                 events.ScheduleEvent(EVENT_WIND_SWORD, 3000);
-                // events.ScheduleEvent(EVENT_WINDFUR_PUNCH, 12000);
+//                events.ScheduleEvent(EVENT_WINDFUR_PUNCH, 12000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -2341,37 +2404,37 @@ class mob_master_windfur : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -2396,12 +2459,12 @@ class mob_master_windfur : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_WIND_SWORD:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_WIND_SWORD, false);
                             events.ScheduleEvent(EVENT_WIND_SWORD, 18000);
                             break;
                         case EVENT_WINDFUR_PUNCH:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_WINDFUR_PUNCH, false);
                             events.ScheduleEvent(EVENT_WINDFUR_PUNCH, 18000);
                             break;
@@ -2416,34 +2479,31 @@ class mob_master_windfur : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_master_windfurAI(creature);
-        }
 };
 
 // Tankiss - 61006
 class mob_tankiss : public CreatureScript
 {
     public:
-        mob_tankiss() : CreatureScript("mob_tankiss") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_tankiss() : CreatureScript("mob_tankiss")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30907) == QUEST_STATUS_INCOMPLETE)
                 {
@@ -2451,27 +2511,27 @@ class mob_tankiss : public CreatureScript
                     {
                         if (Creature* hackiss = GetClosestCreatureWithEntry(creature, 61007, 20.0f, true))
                         {
-                            creature->SetFaction(14);
-                            healiss->SetFaction(14);
-                            hackiss->SetFaction(14);
+                            creature->setFaction(14);
+                            healiss->setFaction(14);
+                            hackiss->setFaction(14);
 
                             if (creature->GetAI())
                             {
-                                creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                creature->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 creature->AI()->Reset();
                                 creature->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
 
                             if (healiss->GetAI())
                             {
-                                healiss->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                healiss->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 healiss->AI()->Reset();
                                 healiss->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
 
                             if (hackiss->GetAI())
                             {
-                                hackiss->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                hackiss->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 hackiss->AI()->Reset();
                                 hackiss->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
@@ -2482,17 +2542,22 @@ class mob_tankiss : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_tankissAI(creature);
+        }
+
         struct mob_tankissAI : public ScriptedAI
         {
             mob_tankissAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -2501,7 +2566,7 @@ class mob_tankiss : public CreatureScript
                 events.ScheduleEvent(EVENT_GROUND_PUMMEL, 18000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -2519,33 +2584,33 @@ class mob_tankiss : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void EnterCombat(Unit* victim) override
+            void EnterCombat(Unit* victim)
             {
                 if (Creature* healiss = GetClosestCreatureWithEntry(me, 61004, 20.0f, true))
                 {
@@ -2557,11 +2622,11 @@ class mob_tankiss : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -2586,7 +2651,8 @@ class mob_tankiss : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_FLAY:
-                            me->CastSpell(me, SPELL_FLAY, false);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(me, SPELL_FLAY, false);
                             events.ScheduleEvent(EVENT_FLAY, 25000);
                             break;
                         case EVENT_FULL_CONTACT_INTERVENE:
@@ -2610,34 +2676,31 @@ class mob_tankiss : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_tankissAI(creature);
-        }
 };
 
 // Healiss - 61004
 class mob_healiss : public CreatureScript
 {
     public:
-        mob_healiss() : CreatureScript("mob_healiss") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_healiss() : CreatureScript("mob_healiss")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30907) == QUEST_STATUS_INCOMPLETE)
                 {
@@ -2645,27 +2708,27 @@ class mob_healiss : public CreatureScript
                     {
                         if (Creature* hackiss = GetClosestCreatureWithEntry(creature, 61007, 20.0f, true))
                         {
-                            creature->SetFaction(14);
-                            tankiss->SetFaction(14);
-                            hackiss->SetFaction(14);
+                            creature->setFaction(14);
+                            tankiss->setFaction(14);
+                            hackiss->setFaction(14);
 
                             if (creature->GetAI())
                             {
-                                creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                creature->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 creature->AI()->Reset();
                                 creature->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
 
                             if (tankiss->GetAI())
                             {
-                                tankiss->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                tankiss->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 tankiss->AI()->Reset();
                                 tankiss->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
 
                             if (hackiss->GetAI())
                             {
-                                hackiss->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                hackiss->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 hackiss->AI()->Reset();
                                 hackiss->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
@@ -2676,26 +2739,31 @@ class mob_healiss : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_healissAI(creature);
+        }
+
         struct mob_healissAI : public ScriptedAI
         {
             mob_healissAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
-                // events.ScheduleEvent(EVENT_HEALISS_OIL, 3000);
-                // events.ScheduleEvent(EVENT_JUNGE_REMEDY, 12000);
+//                events.ScheduleEvent(EVENT_HEALISS_OIL, 3000);
+//                events.ScheduleEvent(EVENT_JUNGE_REMEDY, 12000);
                 events.ScheduleEvent(EVENT_MIND_FLAY, 18000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -2713,33 +2781,33 @@ class mob_healiss : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void EnterCombat(Unit* victim) override
+            void EnterCombat(Unit* victim)
             {
                 if (Creature* tankiss = GetClosestCreatureWithEntry(me, 61006, 20.0f, true))
                 {
@@ -2751,11 +2819,11 @@ class mob_healiss : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -2780,7 +2848,8 @@ class mob_healiss : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_HEALISS_OIL:
-                            me->CastSpell(me, SPELL_HEALISS_OIL, false);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(me, SPELL_HEALISS_OIL, false);
                             events.ScheduleEvent(EVENT_HEALISS_OIL, 25000);
                             break;
                         case EVENT_JUNGE_REMEDY:
@@ -2804,34 +2873,31 @@ class mob_healiss : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_healissAI(creature);
-        }
 };
 
 // Hackiss - 61007
 class mob_hackiss : public CreatureScript
 {
     public:
-        mob_hackiss() : CreatureScript("mob_hackiss") {}
-
-        bool OnGossipHello(Player* player, Creature* creature) override
+        mob_hackiss() : CreatureScript("mob_hackiss")
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            SendGossipMenuFor(player, 69970, creature->GetGUID());
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(69970, creature->GetGUID());
 
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
 
                 if (player->GetQuestStatus(30907) == QUEST_STATUS_INCOMPLETE)
                 {
@@ -2839,27 +2905,27 @@ class mob_hackiss : public CreatureScript
                     {
                         if (Creature* tankiss = GetClosestCreatureWithEntry(creature, 61006, 20.0f, true))
                         {
-                            creature->SetFaction(14);
-                            healiss->SetFaction(14);
-                            tankiss->SetFaction(14);
+                            creature->setFaction(14);
+                            healiss->setFaction(14);
+                            tankiss->setFaction(14);
 
                             if (creature->GetAI())
                             {
-                                creature->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                creature->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 creature->AI()->Reset();
                                 creature->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
 
                             if (healiss->GetAI())
                             {
-                                healiss->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                healiss->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 healiss->AI()->Reset();
                                 healiss->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
 
                             if (tankiss->GetAI())
                             {
-                                tankiss->AI()->SetGUID(player ? player->GetGUID() : ObjectGuid::Empty);
+                                tankiss->AI()->SetGUID(player ? player->GetGUID() : 0);
                                 tankiss->AI()->Reset();
                                 tankiss->AI()->DoAction(ACTION_REMOVE_FLAG);
                             }
@@ -2870,17 +2936,22 @@ class mob_hackiss : public CreatureScript
             return true;
         }
 
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_hackissAI(creature);
+        }
+
         struct mob_hackissAI : public ScriptedAI
         {
             mob_hackissAI(Creature* creature) : ScriptedAI(creature)
             {
-                playerGUID = ObjectGuid::Empty;
+                playerGuid = 0;
             }
 
             EventMap events;
-            ObjectGuid playerGUID;
+            uint64 playerGuid;
 
-            void Reset() override
+            void Reset()
             {
                 events.Reset();
 
@@ -2889,7 +2960,7 @@ class mob_hackiss : public CreatureScript
                 events.ScheduleEvent(EVENT_MIND_FLAY, 18000);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage) override
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (Player* player = attacker->ToPlayer())
                 {
@@ -2907,33 +2978,33 @@ class mob_hackiss : public CreatureScript
                 }
             }
 
-            void SetGUID(ObjectGuid guid, int32 index) override
+            void SetGUID(uint64 guid, int32 index)
             {
                 if (index == 0)
-                    playerGUID = guid;
+                    playerGuid = guid;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/) override
+            void IsSummonedBy(Unit* summoner)
             {
                 events.ScheduleEvent(EVENT_DESPAWN, 600000);
             }
 
-            void DoAction(int32 action) override
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_REMOVE_FLAG)
                 {
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
 
                 else if (action == ACTION_REINITIALIZE)
                 {
-                    me->SetFaction(35);
+                    me->setFaction(35);
                     me->CombatStop();
-                    me->AddNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 }
             }
 
-            void EnterCombat(Unit* victim) override
+            void EnterCombat(Unit* victim)
             {
                 if (Creature* healiss = GetClosestCreatureWithEntry(me, 61004, 20.0f, true))
                 {
@@ -2945,11 +3016,11 @@ class mob_hackiss : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(const uint32 diff)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                 {
-                    if (!player->IsAlive())
+                    if (!player->isAlive())
                     {
                         DoAction(ACTION_REINITIALIZE);
                         return;
@@ -2974,7 +3045,7 @@ class mob_hackiss : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_ACID_SPLIT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 me->CastSpell(target, SPELL_ACID_SPLIT, false);
                             events.ScheduleEvent(EVENT_ACID_SPLIT, 25000);
                             break;
@@ -2999,10 +3070,404 @@ class mob_hackiss : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
+};
+
+class npc_sya_zhong : public CreatureScript
+{
+    public:
+        npc_sya_zhong() : CreatureScript("npc_sya_zhong")
+        {
+        }
+
+        // Guid list to prevent spam
+        std::list<uint64> m_GuidList;
+
+        bool OnGossipHello(Player* p_Player, Creature* p_Creature)
+        {
+            // Quest verif
+            if (CHECK_STATUS(30682) || CHECK_STATUS(30681) || CHECK_STATUS(30680) || CHECK_STATUS(30673))
+            {
+                // Quest validation
+                p_Player->KilledMonsterCredit(p_Creature->GetEntry());
+
+                // Prevent spam
+                for (uint64 m_Guid : m_GuidList)
+                {
+                    if (m_Guid == p_Player->GetGUID())
+                        return true;
+                }
+                p_Creature->AI()->Talk(0);
+                m_GuidList.push_back(p_Player->GetGUID());
+            }
+            else
+            {
+                p_Player->PrepareQuestMenu(p_Creature->GetGUID());
+                p_Player->SEND_GOSSIP_MENU(1, p_Creature->GetGUID());
+            }
+
+            return true;
+        }
+};
+
+/// Wrathion/58038
+class npc_wrathion_xuen : public CreatureScript
+{
+    public:
+        npc_wrathion_xuen() : CreatureScript("npc_wrathion_xuen")
+        {
+        }
+
+        bool OnGossipHello(Player* p_Player, Creature* p_Creature) override
+        {
+            if (CHECK_STATUS(32805))
+            {
+                if (!GetClosestCreatureWithEntry(p_Creature, 57767, 80.0f))
+                {
+                    p_Player->KilledMonsterCredit(70927);
+                    p_Player->SetPhaseMask(8, true);
+                    p_Player->SummonCreature(57767, *p_Creature);
+                }
+            }
+            return true;
+        }
+};
+
+/// Wrathion/58038
+class npc_xuen_challenge_gong : public CreatureScript
+{
+    public:
+        npc_xuen_challenge_gong() : CreatureScript("npc_xuen_challenge_gong")
+        {
+        }
+
+        bool OnGossipSelect(Player* p_Player, Creature* p_Creature, uint32 /*sender*/, uint32 p_Action)
+        {
+            p_Player->PlayerTalkClass->ClearMenus();
+
+            if (p_Action == 1)
+            {
+                /// Quest Celestial Blessings
+                if (p_Player->GetQuestStatus(32805) == QUEST_STATUS_INCOMPLETE && p_Player->GetRoleConsideringSpe(p_Player->GetSpecializationId(p_Player->GetActiveSpec())) == Roles::ROLES_DPS)
+                {
+                    if (Creature* l_Wrathion = GetClosestCreatureWithEntry(p_Creature, 57767, 30.0f))
+                    {
+                        l_Wrathion->setFaction(14);
+                        l_Wrathion->NearTeleportTo(3795.6834f, 533.5974f, 639.0077f, 3.165f);
+                    }
+                }
+                p_Player->CLOSE_GOSSIP_MENU();
+            }
+
+            return true;
+        }
+};
+
+/// Wrathion/58038
+class npc_wrathion_xuen_challenge : public CreatureScript
+{
+    public:
+        npc_wrathion_xuen_challenge() : CreatureScript("npc_wrathion_xuen_challenge")
+        {
+        }
+
+        struct npc_wrathion_xuen_challengeAI : public ScriptedAI
+        {
+            npc_wrathion_xuen_challengeAI(Creature* creature) : ScriptedAI(creature)
+            {
+                m_PlayerGuid    = 0;
+                m_ActionCounter = 0;
+            }
+
+            enum eWrathionDatas
+            {
+                EventLaunchEvent                = 1,
+                EventCrumblingArc               = 2,
+                SpellCrumblingArc               = 141653,
+                EventReignOfFireAura            = 3,
+                SpellReignOfFireAura            = 141510,
+                SpellAuraBlindSide              = 141623,
+                EventBloodOfTheDeathBorn        = 4,
+                SpellBloodOfTheDeathBorn        = 141500,
+                EventFightOver                  = 5,
+                EventDespawn                    = 6,
+                EventSummonAdds                 = 7
+            };
+
+            uint64 m_PlayerGuid;
+            uint32 m_ActionCounter;
+            EventMap m_Events;
+            bool m_SceneDone;
+
+            void Reset() override
+            {
+                m_SceneDone = false;
+            }
+
+            void EnterCombat(Unit* p_Killer) override
+            {
+                if (!m_SceneDone)
+                    return;
+
+                m_Events.Reset();
+                m_Events.ScheduleEvent(eWrathionDatas::EventCrumblingArc, 6000);
+                m_Events.ScheduleEvent(eWrathionDatas::EventReignOfFireAura, 10000);
+                m_Events.ScheduleEvent(eWrathionDatas::EventBloodOfTheDeathBorn, 21000);
+                m_Events.ScheduleEvent(eWrathionDatas::EventSummonAdds, 28000);
+            }
+
+            void DamageTaken(Unit*p_Attacker, uint32& p_Damage) override
+            {
+                if (p_Damage >= me->GetHealth())
+                {
+                    p_Damage = 0;
+                    std::list<AreaTrigger*> l_AreatriggerList;
+                    std::list<Creature*> l_CreatureList;
+
+                    me->GetCreatureListWithEntryInGrid(l_CreatureList, 71041, 50.0f);
+                    me->GetAreaTriggerList(l_AreatriggerList, 141466);
+
+                    for (Creature* l_Creature : l_CreatureList)
+                        l_Creature->DespawnOrUnsummon();
+
+                    for (AreaTrigger* l_Areatrigger : l_AreatriggerList)
+                        l_Areatrigger->Remove(0);
+
+                    me->setFaction(35);
+                    me->SetFullHealth();
+                    me->RemoveAllAuras();
+
+                    if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                    {
+                        if (l_Xuen->AI())
+                            l_Xuen->AI()->Talk(7);
+                    }
+
+                    m_Events.ScheduleEvent(eWrathionDatas::EventFightOver, 500);
+                }
+            }
+
+            void IsSummonedBy(Unit* p_Summoner) override
+            {
+                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 1500);
+            }
+
+            void UpdateAI(const uint32 p_Diff) override
+            {
+                m_Events.Update(p_Diff);
+
+                switch (m_Events.ExecuteEvent())
+                {
+                    case eWrathionDatas::EventLaunchEvent:
+                    {
+                        if (m_SceneDone)
+                            return;
+
+                        ++m_ActionCounter;
+
+                        switch (m_ActionCounter)
+                        {
+                            case 1:
+                                Talk(0);
+                                me->SetWalk(true);
+                                me->GetMotionMaster()->MovePoint(1, 3811.1347f, 528.2623f, 639.007f);
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 18000);
+                                break;
+                            case 2:
+                                Talk(1);
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 4000);
+                                break;
+                            case 3:
+                                Talk(2);
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 4300);
+                                break;
+                            case 4:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(0);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 11500);
+                                break;
+                            case 5:
+                                Talk(3);
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 3500);
+                                break;
+                            case 6:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(1);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 4500);
+                                break;
+                            case 7:
+                                Talk(4);
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 4000);
+                                break;
+                            case 8:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(2);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 3000);
+                                break;
+                            case 9:
+                                Talk(5);
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 3000);
+                                break;
+                            case 10:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(3);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 1500);
+                                break;
+                            case 11:
+                                Talk(6);
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 3000);
+                                break;
+                            case 12:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(4);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 14000);
+                                break;
+                            case 13:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(5);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 9000);
+                                break;
+                            case 14:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(6);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 6000);
+                                break;
+                            case 15:
+                                m_ActionCounter = 0;
+                                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                                m_SceneDone = true;
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 4000);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    case eWrathionDatas::EventCrumblingArc:
+                        if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(l_Target, eWrathionDatas::SpellCrumblingArc, false);
+                        m_Events.ScheduleEvent(eWrathionDatas::EventCrumblingArc, 30000);
+                        break;
+                    case eWrathionDatas::EventReignOfFireAura:
+                        if (Unit* l_Target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            me->CastSpell(l_Target, eWrathionDatas::SpellReignOfFireAura, false);
+                        m_Events.ScheduleEvent(eWrathionDatas::EventReignOfFireAura, 30000);
+                        break;
+                    case eWrathionDatas::EventBloodOfTheDeathBorn:
+                        if (Unit* l_Target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            me->CastSpell(l_Target, eWrathionDatas::SpellBloodOfTheDeathBorn, false);
+                        m_Events.ScheduleEvent(eWrathionDatas::EventReignOfFireAura, 60000);
+                        break;
+                    case eWrathionDatas::EventSummonAdds:
+                        me->CastSpell(me, 141483, false);
+                        m_Events.ScheduleEvent(eWrathionDatas::EventSummonAdds, 45000);
+                        break;
+                    case eWrathionDatas::EventFightOver:
+                    {
+                        ++m_ActionCounter;
+
+                        switch (m_ActionCounter)
+                        {
+                            case 1:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(8);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 12000);
+                                break;
+                            case 2:
+                                if (Creature* l_Xuen = GetClosestCreatureWithEntry(me, 71107, 50.0f))
+                                {
+                                    if (l_Xuen->AI())
+                                        l_Xuen->AI()->Talk(9);
+                                }
+                                m_Events.ScheduleEvent(eWrathionDatas::EventLaunchEvent, 4500);
+                                break;
+                            case 3:
+                                Talk(7);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        break;
+                    }
+                    case eWrathionDatas::EventDespawn:
+                        me->DespawnOrUnsummon();
+                        break;
+                    default:
+                        break;
+                }
+
+                if (m_SceneDone)
+                    DoMeleeAttackIfReady();
+            }
+        };
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return new mob_hackissAI(creature);
+            return new npc_wrathion_xuen_challengeAI(creature);
+        }
+};
+
+/// White Tiger Temple Phases
+class playerScript_enter_white_tiger_temple : public PlayerScript
+{
+    public:
+		playerScript_enter_white_tiger_temple() : PlayerScript("playerScript_enter_white_tiger_temple") { }
+
+		/// Save Phasemask and GUID of player entering the area, remove it when leaving
+		std::map<uint64, uint32> m_PlayerGUIDs;
+
+		void OnUpdateZone(Player* p_Player, uint32 p_NewZoneId, uint32 p_OldZoneId, uint32 p_NewAreaId, uint32 p_OldAreaId) override
+		{
+            /// Temple of White Tiger
+            if (p_NewAreaId == 6174)
+			{
+				m_PlayerGUIDs.insert(std::make_pair(p_Player->GetGUID(), p_Player->GetPhaseMask()));
+
+                /// A Celestial Experience
+                if (p_Player->GetQuestStatus(31395) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(31394) == QUEST_STATUS_INCOMPLETE)
+                    p_Player->SetPhaseMask(2, true);
+                /// Celestial Blessings
+                else if (p_Player->GetQuestStatus(32805) == QUEST_STATUS_INCOMPLETE)
+                    p_Player->SetPhaseMask(4, true);
+            }
+			else if (p_OldAreaId == 6174)
+			{
+				for (auto l_Itr = m_PlayerGUIDs.begin(); l_Itr != m_PlayerGUIDs.end(); l_Itr++)
+				{
+					if (l_Itr->first == p_Player->GetGUID())
+					{
+						p_Player->SetPhaseMask(l_Itr->second, true);
+						l_Itr = m_PlayerGUIDs.erase(l_Itr);
+
+						if (l_Itr == m_PlayerGUIDs.end())
+							break;
+					}
+				}
+			}
         }
 };
 
@@ -3033,4 +3498,9 @@ void AddSC_kun_lai_summit()
     new mob_tankiss();
     new mob_healiss();
     new mob_hackiss();
+    new npc_sya_zhong();
+    new npc_wrathion_xuen();
+    new npc_wrathion_xuen_challenge();
+    new npc_xuen_challenge_gong();
+    new playerScript_enter_white_tiger_temple();
 }

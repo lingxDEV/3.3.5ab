@@ -1,32 +1,46 @@
 #ifndef VEILED_STAIR_H
 #define VEILED_STAIR_H
 
-enum eQuests
+namespace VeiledStairQuests
 {
-    QUEST_A_LEGEND_IN_THE_MAKING     = 31454
-};
+    enum MyEnum
+    {
+        QuestALegendInTheMaking    = 31454,
+        QuestFearItself            = 31481,
+        QuestIncoming              = 31483,
+        QuestMeasureOfALeaderAlly  = 32373,
+        QuestMeasureOfALeaderHorde = 32427,
+        QuestTheLionRoars          = 32389,
+        QuestGloryToTheHorde       = 32431,
+        QuestCallOfThePackmaster   = 32390,
+        QuestTheSoulOfTheHorde     = 32432,
+        QuestTheCrownOfHeaven      = 32595
+    };
+}
 
-enum eCreatures
+namespace VeiledStairCreatures
 {
-    LEGEND_MAKING_KILL_CREDIT       = 64649
-};
+    enum
+    {
+        CreditALegendInTheMaking = 64649
+    };
+}
 
-enum eActions
+namespace VeiledStairEvents
 {
-};
-
-enum eEvents
-{
-    EVENT_FIRST_MOVE    = 1,
-    EVENT_SECOND_MOVE   = 2,
-    EVENT_THIRD_TALK    = 3,
-    EVENT_FOURTH_TALK   = 4,
-    EVENT_FIFTH_TALK    = 5,
-    EVENT_SIXTH_TALK    = 6,
-    EVENT_SEVENTH_TALK  = 7,
-    EVENT_EIGHTH_TALK   = 8,
-    EVENT_FINAL         = 9,
-    EVENT_PLAY_SCENE    = 10
-};
+    enum
+    {
+        EventFirstMove   = 1,
+        EventSecondMove  = 2,
+        EventThirdTalk   = 3,
+        EventFourthTalk  = 4,
+        EventFifthTalk   = 5,
+        EventSixthTalk   = 6,
+        EventSeventhTalk = 7,
+        EventEigthTalk   = 8,
+        EventFinal       = 9,
+        EventPlayScene   = 10
+    };
+}
 
 #endif

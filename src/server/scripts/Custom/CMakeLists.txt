@@ -1,5 +1,4 @@
-# Copyright (C) 2011-2022 Project SkyFire <http://www.projectskyfire.org/
-# Copyright (C) 2008-2022 TrinityCore <http://www.trinitycore.org/>
+# Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -11,6 +10,22 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
+    Custom/event_april.cpp
+    Custom/duel_reset.cpp
+    Custom/duel_zone.cpp
+    Custom/ArenaFastStart.cpp
+    Custom/teleguy.cpp
+    Custom/petguy.cpp
+    Custom/arena_spectator.cpp
+    Custom/npc_transmogrify.cpp
+    Custom/chat_censor.cpp
+    Custom/npc_1v1arena.cpp
+	Custom/proff_npc.cpp
+    Custom/boss_maximus.cpp
+    Custom/npc_visualweapon.cpp
+	Custom/Newchar.cpp
+	Custom/Npchelp.cpp
+	Custom/boss_announcer.cpp
 )
 
 message("  -> Prepared: Custom")

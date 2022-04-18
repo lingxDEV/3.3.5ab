@@ -1,11 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////
-//
-// Project-Hellscream https://hellscream.org
-// Copyright (C) 2018-2020 Project-Hellscream-6.2
-// Discord https://discord.gg/CWCF3C9
-//
-////////////////////////////////////////////////////////////////////////////////
-
 #include "SpellScript.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
@@ -362,7 +354,7 @@ class mob_shao_tien_surveyor : public CreatureScript
 };
 
 // Shado Pan Flare - 123193
-class spell_shadow_pan_flare: public SpellScriptLoader
+class spell_shadow_pan_flare : public SpellScriptLoader
 {
     public:
         spell_shadow_pan_flare() : SpellScriptLoader("spell_shadow_pan_flare")
@@ -397,7 +389,84 @@ class spell_shadow_pan_flare: public SpellScriptLoader
         }
 };
 
-#ifndef __clang_analyzer__
+enum eYorickSharpeyeEvents
+{
+    EVENT_BELLOWING_RAGE = 1,
+    EVENT_RUSHING_CHARGE = 2,
+    EVENT_YAUNGOL_STOMP = 3
+};
+
+enum eYorickSharpeyeSpells
+{
+    SPELL_BELLOWING_RAGE = 124297,
+    SPELL_RUSHING_CHARGE = 124302,
+    SPELL_YAUNGOL_STOMP = 124289
+};
+
+class npc_yorik_sharpeye : public CreatureScript
+{
+    public:
+        npc_yorik_sharpeye() : CreatureScript("npc_yorik_sharpeye")
+        {
+        }
+
+        struct npc_yorik_sharpeyeAI : public ScriptedAI
+        {
+            npc_yorik_sharpeyeAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+
+            EventMap m_Events;
+
+            void EnterCombat(Unit* /*p_Victim*/)
+            {
+                Talk(0);
+                m_Events.Reset();
+                m_Events.ScheduleEvent(EVENT_BELLOWING_RAGE, 5000);
+                m_Events.ScheduleEvent(EVENT_RUSHING_CHARGE, 25000);
+                m_Events.ScheduleEvent(EVENT_YAUNGOL_STOMP, 15000);
+            }
+
+            void UpdateAI(const uint32 p_Diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                m_Events.Update(p_Diff);
+
+                switch (m_Events.ExecuteEvent())
+                {
+                case EVENT_BELLOWING_RAGE:
+                    if (Unit* l_Target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                        me->CastSpell(l_Target, SPELL_BELLOWING_RAGE, false);
+                    m_Events.ScheduleEvent(EVENT_BELLOWING_RAGE, 30000);
+                    break;
+                case EVENT_RUSHING_CHARGE:
+                    if (Unit* l_Target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                        me->CastSpell(l_Target, SPELL_RUSHING_CHARGE, false);
+                    m_Events.ScheduleEvent(EVENT_RUSHING_CHARGE, 30000);
+                    break;
+                case EVENT_YAUNGOL_STOMP:
+                    if (Unit* l_Target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                        me->CastSpell(l_Target, SPELL_YAUNGOL_STOMP, false);
+                    m_Events.ScheduleEvent(EVENT_YAUNGOL_STOMP, 30000);
+                    break;
+                default:
+                    break;
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_yorik_sharpeyeAI(creature);
+        }
+};
+
 void AddSC_vale_of_eternal_blossoms()
 {
     new mob_zhao_jin();
@@ -405,6 +474,6 @@ void AddSC_vale_of_eternal_blossoms()
     new mob_subjuged_serpent();
     new mob_shao_tien_behemoth();
     new mob_shao_tien_surveyor();
+    new npc_yorik_sharpeye();
     new spell_shadow_pan_flare();
 }
-#endif
